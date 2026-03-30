@@ -7,7 +7,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="API Integradora - Unidad 1",
         description="Conceptos: Path, Query, Body, Pydantic, Errores.",
-        version="1.0.0"
+        version="2.0.0"
     )
     
     app.include_router(producto_router)
