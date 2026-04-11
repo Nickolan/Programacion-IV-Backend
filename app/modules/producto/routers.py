@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
-from typing import List
+from typing import List, Optional
 from sqlmodel import Session
 from app.core.database import get_session
 from . import schemas, services
@@ -10,9 +10,26 @@ router = APIRouter(prefix="/productos", tags=["Productos"])
 def alta_producto(producto: schemas.ProductoCreate, session: Session = Depends(get_session)):
     return services.crear(session, producto)
 
-@router.get("/", response_model=List[schemas.ProductoReadFull], status_code=status.HTTP_200_OK)
-def listar_productos(skip: int = Query(0, ge=0), limit: int = Query(10, le=50), session: Session = Depends(get_session)):
-    return services.obtener_todos(session, skip, limit)
+@router.get("/", response_model=schemas.ProductoPaginadoResponse, status_code=status.HTTP_200_OK)
+def listar_productos(
+    offset: int = Query(0, ge=0),
+    limit: int = Query(10, ge=1, le=100),
+    nombre: Optional[str] = None,
+    session: Session = Depends(get_session)
+):
+    total, items = services.obtener_todos(
+        limit=limit,
+        nombre=nombre,
+        offset=offset,
+        session=session
+    )
+
+    print(f"RESULTADOS:\n {items} \n Total: {total} ")
+
+    return {
+        "total": total,
+        "items": items
+    }
 
 @router.get("/{id}", response_model=schemas.ProductoReadFull, status_code=status.HTTP_200_OK)
 def detalle_producto(id: int = Path(..., gt=0), session: Session = Depends(get_session)):

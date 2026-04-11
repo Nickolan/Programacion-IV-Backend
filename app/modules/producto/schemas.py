@@ -44,3 +44,7 @@ class ProductoStockResponse(SQLModel):
 # ─── Operaciones N:M ──────────────────────────────────────────────────────
 class ProductoCategoriaAssign(SQLModel):
     categoria_id: int
+
+class ProductoPaginadoResponse(SQLModel):
+    total: int
+    items: List[ProductoRead]

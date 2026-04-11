@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
-from typing import List
+from typing import List, Optional
 from sqlmodel import Session
 from app.core.database import get_session
 from . import schemas, services
@@ -10,9 +10,23 @@ router = APIRouter(prefix="/categorias", tags=["Categorías"])
 def alta_categoria(categoria: schemas.CategoriaCreate, session: Session = Depends(get_session)):
     return services.crear(session, categoria)
 
-@router.get("/", response_model=List[schemas.CategoriaReadFull], status_code=status.HTTP_200_OK)
-def listar_categorias(skip: int = Query(0, ge=0), limit: int = Query(10, le=50), session: Session = Depends(get_session)):
-    return services.obtener_todas(session, skip, limit)
+@router.get("/", response_model=schemas.CategoriaPaginadoResponse, status_code=status.HTTP_200_OK)
+def listar_categorias(
+    offset: int = Query(0, ge=0),
+    limit: int = Query(10, ge=1, le=100),
+    descripcion: Optional[str] = None,
+    session: Session = Depends(get_session)
+):
+    total, items = services.obtener_todas(
+        session=session,
+        offset=offset,
+        limit=limit,
+        descripcion=descripcion
+    )
+    return {
+        "total": total,
+        "items": items
+    }
 
 @router.get("/{id}", response_model=schemas.CategoriaReadFull, status_code=status.HTTP_200_OK)
 def detalle_categoria(id: int = Path(..., gt=0), session: Session = Depends(get_session)):

@@ -1,6 +1,6 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from sqlalchemy.orm import selectinload
-from sqlmodel import Session, select
+from sqlmodel import Session, select, func
 from .models import Categoria
 from .schemas import CategoriaCreate, CategoriaUpdate
 
@@ -11,9 +11,25 @@ def crear(session: Session, data: CategoriaCreate) -> Categoria:
     session.refresh(categoria)
     return categoria
 
-def obtener_todas(session: Session, skip: int = 0, limit: int = 10) -> List[Categoria]:
-    stmt = select(Categoria).options(selectinload(Categoria.productos)).offset(skip).limit(limit)
-    return list(session.exec(stmt).all())
+def obtener_todas(
+        session: Session, 
+        offset: int = 0,
+        limit: int = 100,
+        descripcion: Optional[str] = None
+    ) -> Tuple[int, List[Categoria]]:
+    
+    query = select(Categoria)
+
+    if descripcion:
+        query = query.where(Categoria.descripcion.ilike(f"%{descripcion}%"))
+
+    count_query = select(func.count()).select_from(query.subquery())
+
+    total = session.exec(count_query).one()
+
+    results = session.exec(query.offset(offset).limit(limit)).all()
+
+    return total, list(results)
 
 def obtener_por_id(session: Session, id: int) -> Optional[Categoria]:
     stmt = select(Categoria).where(Categoria.id == id).options(selectinload(Categoria.productos))

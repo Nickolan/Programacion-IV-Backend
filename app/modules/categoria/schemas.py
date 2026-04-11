@@ -31,3 +31,7 @@ class ProductoBasicRead(SQLModel):
 class CategoriaReadFull(CategoriaRead):
     """Categoria con sus productos (N:M)."""
     productos: List[ProductoBasicRead] = []
+
+class CategoriaPaginadoResponse(SQLModel):
+    total: int
+    items: List[CategoriaRead]
