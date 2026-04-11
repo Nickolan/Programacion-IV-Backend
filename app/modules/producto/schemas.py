@@ -1,35 +1,46 @@
-from pydantic import BaseModel, Field
-from typing import Optional
+from typing import List, Optional
+from pydantic import Field
+from sqlmodel import SQLModel
 
-
-class ProductoBase(BaseModel):
-    nombre: str = Field(..., example="Silla de Oficina")
-    categoria: str = Field(..., pattern=r"^[A-Z]{3}-\d{2}$", example="MUE-01")
-    precio: float = Field(gt=0, example=150.50)
-    stock: int = Field(ge=0, example=20)
-    stock_minimo: int = Field(ge=0, example=5)
+# ─── Base ──────────────────────────────────────────────────────────────────
+class ProductoBase(SQLModel):
+    nombre: str = Field(..., examples=["Silla de Oficina"])
+    precio: float = Field(gt=0, examples=[150.50])
+    stock: int = Field(ge=0, examples=[20])
+    stock_minimo: int = Field(ge=0, examples=[5])
     activo: bool = True
 
-
+# ─── Request schemas ───────────────────────────────────────────────────────
 class ProductoCreate(ProductoBase):
-    pass  # Exige todos los campos obligatorios de Base
+    pass 
 
-
-class ProductoUpdate(BaseModel):
-    # Opcional: Se usa si en el futuro se implementa PATCH (actualización parcial)
+class ProductoUpdate(SQLModel):
     nombre: Optional[str] = None
-    categoria: Optional[str] = Field(None, pattern=r"^[A-Z]{3}-\d{2}$")
     precio: Optional[float] = Field(None, gt=0)
     stock: Optional[int] = Field(None, ge=0)
     stock_minimo: Optional[int] = Field(None, ge=0)
     activo: Optional[bool] = None
 
-
+# ─── Response schemas ──────────────────────────────────────────────────────
 class ProductoRead(ProductoBase):
-    id: int  # Contrato de salida: siempre incluye el ID generado
+    id: int
 
+class CategoriaBasicRead(SQLModel):
+    """Schema reducido para evitar import circular."""
+    id: int
+    codigo: str
+    descripcion: str
+    activo: bool
 
-class ProductoStockResponse(BaseModel):
+class ProductoReadFull(ProductoRead):
+    """Producto con sus categorías anidadas."""
+    categorias: List[CategoriaBasicRead] = []
+
+class ProductoStockResponse(SQLModel):
     stock: int
     bajo_stock_minimo: bool
     activo: bool
+
+# ─── Operaciones N:M ──────────────────────────────────────────────────────
+class ProductoCategoriaAssign(SQLModel):
+    categoria_id: int

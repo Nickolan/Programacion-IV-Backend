@@ -1,48 +1,42 @@
 from typing import List, Optional
-from .schemas import CategoriaCreate, CategoriaRead
+from sqlalchemy.orm import selectinload
+from sqlmodel import Session, select
+from .models import Categoria
+from .schemas import CategoriaCreate, CategoriaUpdate
 
-# Simulamos algunos registros iniciales
-db_categorias: List[CategoriaRead] = [
-    CategoriaRead(id=1, codigo="MUE-01", descripcion="Muebles de Oficina", activo=True),
-    CategoriaRead(id=2, codigo="ELE-02", descripcion="Electrónica", activo=True),
-]
-id_counter = 3
+def crear(session: Session, data: CategoriaCreate) -> Categoria:
+    categoria = Categoria.model_validate(data)
+    session.add(categoria)
+    session.commit()
+    session.refresh(categoria)
+    return categoria
 
+def obtener_todas(session: Session, skip: int = 0, limit: int = 10) -> List[Categoria]:
+    stmt = select(Categoria).options(selectinload(Categoria.productos)).offset(skip).limit(limit)
+    return list(session.exec(stmt).all())
 
-def crear(data: CategoriaCreate) -> CategoriaRead:
-    global id_counter
-    nueva = CategoriaRead(id=id_counter, **data.model_dump())
-    db_categorias.append(nueva)
-    id_counter += 1
-    return nueva
+def obtener_por_id(session: Session, id: int) -> Optional[Categoria]:
+    stmt = select(Categoria).where(Categoria.id == id).options(selectinload(Categoria.productos))
+    return session.exec(stmt).first()
 
+def actualizar_total(session: Session, id: int, data: CategoriaCreate) -> Optional[Categoria]:
+    categoria = session.get(Categoria, id)
+    if not categoria:
+        return None
+    categoria_data = data.model_dump(exclude_unset=True)
+    for key, value in categoria_data.items():
+        setattr(categoria, key, value)
+    session.add(categoria)
+    session.commit()
+    session.refresh(categoria)
+    return categoria
 
-def obtener_todas(skip: int = 0, limit: int = 10) -> List[CategoriaRead]:
-    return db_categorias[skip : skip + limit]
-
-
-def obtener_por_id(id: int) -> Optional[CategoriaRead]:
-    for c in db_categorias:
-        if c.id == id:
-            return c
-    return None
-
-
-def actualizar_total(id: int, data: CategoriaCreate) -> Optional[CategoriaRead]:
-    for index, c in enumerate(db_categorias):
-        if c.id == id:
-            actualizada = CategoriaRead(id=id, **data.model_dump())
-            db_categorias[index] = actualizada
-            return actualizada
-    return None
-
-
-def desactivar(id: int) -> Optional[CategoriaRead]:
-    for index, c in enumerate(db_categorias):
-        if c.id == id:
-            c_dict = c.model_dump()
-            c_dict["activo"] = False
-            actualizada = CategoriaRead(**c_dict)
-            db_categorias[index] = actualizada
-            return actualizada
-    return None
+def desactivar(session: Session, id: int) -> Optional[Categoria]:
+    categoria = session.get(Categoria, id)
+    if not categoria:
+        return None
+    categoria.activo = False
+    session.add(categoria)
+    session.commit()
+    session.refresh(categoria)
+    return categoria
