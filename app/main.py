@@ -23,7 +23,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="FastAPI + SQLModel — Relaciones 1:1 · 1:N · N:M",
-    version="1.0.0",
+    version="1.4.0",
     description=(
         "Proyecto modular que demuestra las tres relaciones principales:\n\n"
         "- **1:N** Categoria → Productos (FK `team_id` en Producto, lado N)\n"
