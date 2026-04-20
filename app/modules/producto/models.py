@@ -4,6 +4,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from app.modules.categoria.models import Categoria
+    from app.modules.ingrediente.models import Ingrediente, IngredienteProductoLink
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Tabla de enlace N:M  →  Producto ↔ Categoria
@@ -53,4 +54,10 @@ class Producto(SQLModel, table=True):
     categorias: List["Categoria"] = Relationship(
         back_populates="productos",
         link_model=ProductoCategoriaLink
+    )
+
+    # Relacion N:M con Ingrediente via IngredienteProductoLink
+    ingredientes: List["Ingrediente"] = Relationship(
+        back_populates="productos",
+        link_model=IngredienteProductoLink
     )

@@ -27,8 +27,8 @@ class ProductoService:
             )
         return producto
     
-    def _get_with_categorias_or_404(self, uof: ProductoUnitOfWork, producto_id: int) -> Producto:
-        producto = uof.productos.get_with_categorias(producto_id)
+    def _get_full_or_404(self, uof: ProductoUnitOfWork, producto_id: int) -> Producto:
+        producto = uof.productos.get_full_by_id(producto_id)
         if not producto:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -76,7 +76,7 @@ class ProductoService:
     
     def obtener_por_id(self, producto_id: int) -> ProductoReadFull:
         with ProductoUnitOfWork(self._session) as uow:
-            producto = self._get_with_categorias_or_404(uow, producto_id)
+            producto = self._get_full_or_404(uow, producto_id)
             print("Producto con categorias: ",producto)
             result = ProductoReadFull.model_validate(producto)
         return result
@@ -91,7 +91,7 @@ class ProductoService:
         with ProductoUnitOfWork(self._session) as uow:
             self._assert_link_not_exists(uow, producto_id, categoria_id)        
             self._get_categoria_or_404(uow, categoria_id)
-            producto = self._get_with_categorias_or_404(uow, producto_id)
+            producto = self._get_full_or_404(uow, producto_id)
 
             uow.productos.link_categoria(producto_id, categoria_id)
             result = ProductoReadFull.model_validate(producto)

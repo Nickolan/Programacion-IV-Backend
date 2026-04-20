@@ -35,6 +35,7 @@ class CategoriaBasicRead(SQLModel):
 class ProductoReadFull(ProductoRead):
     """Producto con sus categorías anidadas."""
     categorias: List[CategoriaBasicRead] = []
+    ingredientes: List[IngredienteBasicRead] = []
 
 class ProductoStockResponse(SQLModel):
     stock: int
@@ -48,3 +49,14 @@ class ProductoCategoriaAssign(SQLModel):
 class ProductoPaginadoResponse(SQLModel):
     total: int
     items: List[ProductoRead]
+
+# ─── Operaciones con Ingredientes ─────────────────────────────────────────
+class IngredienteBasicRead(SQLModel):
+    """Schema reducido para evitar import circular."""
+    id: int
+    nombre: str
+    unidad_medida: str
+
+class ProductoReadWithIngredientes(ProductoRead):
+    """Producto con sus ingredientes anidados."""
+    ingredientes: List[IngredienteBasicRead] = []

@@ -34,6 +34,14 @@ class ProductoRepository(BaseRepository[Producto]):
             .options(selectinload(Producto.categorias))
         ).first()
     
+    def get_full_by_id(self, producto_id: int) -> Producto | None:
+        return self.session.exec(
+            select(Producto)
+            .where(Producto.id == producto_id)
+            .options(selectinload(Producto.categorias))
+            .options(selectinload(Producto.ingredientes))
+        ).first()
+    
     def count(self) -> int:
         return len(self.session.exec(select(Producto)).all())
 
@@ -63,13 +71,7 @@ class ProductoRepository(BaseRepository[Producto]):
         return link
     
     def unlink_categoria(self, producto_id: int, categoria_id: int) -> None:
-        link = self.session.exec(
-            select(ProductoCategoriaLink)
-            .where(
-                ProductoCategoriaLink.producto_id == producto_id,
-                ProductoCategoriaLink.categoria_id == categoria_id
-            )
-        ).first()
+        link = self.get_link(producto_id, categoria_id)
         if link:
             self.session.delete(link)
             self.session.commit()
