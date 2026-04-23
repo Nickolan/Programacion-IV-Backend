@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -16,10 +17,18 @@ class Categoria(SQLModel, table=True):
     __tablename__ = "categoria"
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    codigo: str = Field(index=True, unique=True)
+    nombre: str = Field(index=True, unique=True)
     descripcion: str
-    activo: bool = Field(default=True)
+    imagen_url: Optional[str] = Field(default=None, nullable=True)
+    activo: bool = Field(default=True, nullable=False)
 
+    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    updated_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    deleted_at: Optional[datetime] = Field(default=None, nullable=True)
+
+    # Autoreferencia
+    parent_id: Optional[int] = Field(default=None, sa_column_kwargs={"nullable": True}, foreign_key="categoria.id")
+    
     # Relación N:M con Producto
     productos: List["Producto"] = Relationship(
         back_populates="categorias",

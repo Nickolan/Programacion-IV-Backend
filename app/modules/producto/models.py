@@ -1,10 +1,13 @@
+from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
 from sqlalchemy import Column, ForeignKey, Integer
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import JSON, Field, Relationship, SQLModel
+
+from app.modules.ingrediente.models import IngredienteProductoLink
 
 if TYPE_CHECKING:
     from app.modules.categoria.models import Categoria
-    from app.modules.ingrediente.models import Ingrediente, IngredienteProductoLink
+    from app.modules.ingrediente.models import Ingrediente
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Tabla de enlace N:M  →  Producto ↔ Categoria
@@ -33,6 +36,10 @@ class ProductoCategoriaLink(SQLModel, table=True):
         )
     )
 
+    es_principal: bool = Field(default=False, nullable=False)
+
+    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Producto
 # ─────────────────────────────────────────────────────────────────────────────
@@ -45,10 +52,17 @@ class Producto(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str = Field(index=True)
-    precio: float
+    descripcion: str = Field(default="", nullable=False)
+    precio_base: float = Field(default=0.0, nullable=False, gt=0)
     stock: int = Field(default=0)
     stock_minimo: int = Field(default=0)
+    imagenes_url: List[str] = Field(default_factory=list, sa_column=Column(JSON))
     activo: bool = Field(default=True)
+    disponible: bool = Field(default=True)
+
+    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    updated_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    deleted_at: Optional[datetime] = Field(default=None, nullable=True)
 
     # Relación N:M con Categoria via ProductoCategoriaLink
     categorias: List["Categoria"] = Relationship(

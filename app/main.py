@@ -10,7 +10,6 @@ from app.modules.ingrediente.models import Ingrediente, IngredienteProductoLink
 
 from app.modules.producto.routers import router as producto_router
 from app.modules.categoria.routers import router as categoria_router
-from app.modules.ventas.routers import router as vanta_router
 from app.modules.ingrediente.routers import router as ingrediente_router
 
 @asynccontextmanager
@@ -25,16 +24,17 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="FastAPI + SQLModel — Relaciones 1:1 · 1:N · N:M",
-    version="1.4.0",
+    version="Tesis",
     description=(
         "Proyecto modular que demuestra las tres relaciones principales:\n\n"
-        "- **1:N** Categoria → Productos (FK `team_id` en Producto, lado N)\n"
-        "- **N:M** Producto ↔ Cateogira via `ProductoCategoriaLink`"
+        "- **1:N** Categoria → Productos (FK `categoria_id` en Producto, lado N)\n"
+        "- **N:M** Producto ↔ Categoria via `ProductoCategoriaLink`\n"
+        "- **N:M** Producto ↔ Ingrediente via `IngredienteProductoLink`\n\n"
+        "Cada módulo tiene sus propios modelos, esquemas, servicios y routers, "
     ),
     lifespan=lifespan,
 )
 
 app.include_router(producto_router)
 app.include_router(categoria_router)
-app.include_router(vanta_router)
 app.include_router(ingrediente_router)

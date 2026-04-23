@@ -2,6 +2,7 @@ from typing import List, Optional, Tuple
 from sqlalchemy.orm import selectinload
 from fastapi import HTTPException, status
 from sqlmodel import Session, select, func
+from datetime import datetime
 
 from app.modules.ingrediente.models import Ingrediente, IngredienteProductoLink
 from app.modules.producto.models import Producto
@@ -80,7 +81,8 @@ class IngredienteService:
             update_data = data.model_dump(exclude_unset=True)
             for key, value in update_data.items():
                 setattr(ingrediente, key, value)
-            uow.ingredientes.update(ingrediente)
+            ingrediente.updated_at = datetime.utcnow().isoformat()
+            uow.ingredientes.add(ingrediente)
             result = IngredienteRead.model_validate(ingrediente)
         return result
     

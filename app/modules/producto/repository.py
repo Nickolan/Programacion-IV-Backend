@@ -49,7 +49,6 @@ class ProductoRepository(BaseRepository[Producto]):
         return list(
             self.session.exec(
                 select(Producto)
-                .join(Producto.categorias)
                 .where(Categoria.id == categoria_id)
             ).all()
         )

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from typing import List, Optional
 from sqlmodel import Session
 from app.core.database import get_session
-from app.modules.ingrediente.schemas import IngredienteCreate, IngredienteProductoAssign, IngredienteRead, IngredienteReadFull, IngredienteUpdate
+from app.modules.ingrediente.schemas import IngredienteCreate, IngredienteProductoAssign, IngredienteRead, IngredienteReadFull, IngredienteUpdate, IngredientePaginadoResponse
 from app.modules.ingrediente.services import IngredienteService
 
 router = APIRouter(prefix="/ingredientes", tags=["Ingredientes"])
@@ -17,11 +17,11 @@ def crear_ingrediente(
 ) -> IngredienteRead:
     return svc.crear(ingrediente)
 
-@router.get("/", response_model=List[IngredienteRead], status_code=status.HTTP_200_OK)
+@router.get("/", response_model=IngredientePaginadoResponse, status_code=status.HTTP_200_OK)
 def listar_ingredientes(
     offset: int = Query(0, ge=0),
     limit: int = Query(10, ge=1, le=100),
-    nombre: Optional[str] = None,
+    # nombre: Optional[str] = None,
     svc: IngredienteService = Depends(get_ingrediente_service)
 ):
     return svc.listar(

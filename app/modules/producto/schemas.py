@@ -4,26 +4,34 @@ from sqlmodel import SQLModel
 
 # ─── Base ──────────────────────────────────────────────────────────────────
 class ProductoBase(SQLModel):
-    nombre: str = Field(..., examples=["Silla de Oficina"])
-    precio: float = Field(gt=0, examples=[150.50])
+    nombre: str = Field(..., examples=["Cerveza Quilmes"])
+    descripcion: str = Field(..., examples=["Cerveza rubia, ideal para acompañar una picada."])
+    precio_base: float = Field(gt=0, examples=[150.50])
     stock: int = Field(ge=0, examples=[20])
     stock_minimo: int = Field(ge=0, examples=[5])
-    activo: bool = True
+    imagenes_url: List[str] = Field(default_factory=list, examples=[["https://example.com/producto/pizza.jpg"]])
+    disponible: bool = True
 
 # ─── Request schemas ───────────────────────────────────────────────────────
 class ProductoCreate(ProductoBase):
+    ingredientes: Optional[List[int]] = Field(default=None, examples=[[1, 2, 3]])
     pass 
 
 class ProductoUpdate(SQLModel):
-    nombre: Optional[str] = None
-    precio: Optional[float] = Field(None, gt=0)
+    nombre: Optional[str] = Field(..., examples=["Cerveza Quilmes"])
+    descripcion: Optional[str] = Field(None, examples=["Cerveza rubia, ideal para acompañar una picada."])
+    precio_base: Optional[float] = Field(None, gt=0)
     stock: Optional[int] = Field(None, ge=0)
     stock_minimo: Optional[int] = Field(None, ge=0)
-    activo: Optional[bool] = None
-
+    imagenes_url: Optional[List[str]] = Field(None, examples=[["https://example.com/producto/pizza.jpg"]])
+    disponible: Optional[bool] = None
 # ─── Response schemas ──────────────────────────────────────────────────────
 class ProductoRead(ProductoBase):
     id: int
+    activo: bool
+    # created_at: str
+    # updated_at: str
+    # deleted_at: Optional[str] = None
 
 class CategoriaBasicRead(SQLModel):
     """Schema reducido para evitar import circular."""
@@ -31,6 +39,7 @@ class CategoriaBasicRead(SQLModel):
     codigo: str
     descripcion: str
     activo: bool
+    imagen_url: Optional[str]
 
 class ProductoReadFull(ProductoRead):
     """Producto con sus categorías anidadas."""
@@ -55,7 +64,6 @@ class IngredienteBasicRead(SQLModel):
     """Schema reducido para evitar import circular."""
     id: int
     nombre: str
-    unidad_medida: str
 
 class ProductoReadWithIngredientes(ProductoRead):
     """Producto con sus ingredientes anidados."""
