@@ -94,6 +94,17 @@ class CategoriaService:
         with CategoriaUnitOfWork(self._session) as uow:
             categoria = self._get_or_404(uow, categoria_id)
             parent = self._get_or_404(uow, parent_id)
+            if categoria_id == parent_id:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Una categoría no puede ser su propia padre",
+                )
+            
+            if categoria.activo == False or parent.activo == False:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="No se puede asignar una subcategoría a una categoría inactiva o asignar una categoría inactiva como padre",
+                )
             categoria.parent_id = parent_id
             categoria.updated_at = datetime.utcnow().isoformat()
             uow.categorias.add(categoria)
