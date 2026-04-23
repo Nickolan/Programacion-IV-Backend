@@ -50,7 +50,7 @@ def asignar_producto(
     body: IngredienteProductoAssign, 
     svc: IngredienteService = Depends(get_ingrediente_service),
 ):
-    resultado = svc.agregar_a_producto(ingrediente_id=id, producto_id=body.producto_id)
+    resultado = svc.agregar_a_producto(ingrediente_id=id, body=body)
     return resultado
 
 @router.delete("/{id}/productos", response_model=IngredienteReadFull)

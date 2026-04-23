@@ -6,7 +6,7 @@ from datetime import datetime
 
 from app.modules.ingrediente.models import Ingrediente, IngredienteProductoLink
 from app.modules.producto.models import Producto
-from app.modules.ingrediente.schemas import IngredienteRead, IngredienteCreate, IngredienteUpdate, IngredientePaginadoResponse, IngredienteReadFull
+from app.modules.ingrediente.schemas import IngredienteProductoAssign, IngredienteRead, IngredienteCreate, IngredienteUpdate, IngredientePaginadoResponse, IngredienteReadFull
 from app.modules.ingrediente.unit_of_work import IngredienteUnitOfWork
 
 
@@ -47,6 +47,14 @@ class IngredienteService:
                 detail=f"Producto con ID {producto_id} no encontrado."
             )
         return producto
+    
+    def _es_removible(self, uof: IngredienteUnitOfWork, ingrediente_id: int, producto_id: int) -> bool:
+        link = uof.ingredientes.get_link(ingrediente_id, producto_id)
+        return link.es_removible if link else False
+    
+    def _existe_link(self, uof: IngredienteUnitOfWork, ingrediente_id: int, producto_id: int) -> bool:
+        link = uof.ingredientes.get_link(ingrediente_id, producto_id)
+        return link is not None
     
     # Casos de uso
 
@@ -91,17 +99,28 @@ class IngredienteService:
             ingrediente = self._get_or_404(uow, ingrediente_id)
             uow.ingredientes.delete(ingrediente)
 
-    def agregar_a_producto(self, ingrediente_id: int, producto_id: int) -> IngredienteReadFull:
+    def agregar_a_producto(self, ingrediente_id: int, body: IngredienteProductoAssign) -> IngredienteReadFull:
         with IngredienteUnitOfWork(self._session) as uow:
+            existe_link = self._existe_link(uof=uow, ingrediente_id=ingrediente_id, producto_id=body.producto_id)
+            if existe_link:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"El ingrediente con ID {ingrediente_id} ya está asignado al producto con ID {body.producto_id}."
+                )
             ingrediente = self._get_or_404(uow, ingrediente_id)
-            self._get_producto_or_404(uow, producto_id)
-            uow.ingredientes.link_producto(ingrediente_id, producto_id)
+            self._get_producto_or_404(uow, body.producto_id)
+            uow.ingredientes.link_producto(ingrediente_id, body.producto_id, body.es_removible)
             result = IngredienteReadFull.model_validate(ingrediente)
         return result
     
     def remover_de_producto(self, ingrediente_id: int, producto_id: int) -> IngredienteReadFull:
         with IngredienteUnitOfWork(self._session) as uow:
             ingrediente = self._get_or_404(uof=uow, ingrediente_id=ingrediente_id)
+            if not self._es_removible(uof=uow, ingrediente_id=ingrediente_id, producto_id=producto_id):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"El ingrediente con ID {ingrediente_id} no es removible del producto con ID {producto_id}."
+                )
             self._get_producto_or_404(uof=uow, producto_id=producto_id)
             uow.ingredientes.unlink_producto(ingrediente_id, producto_id)
             result = IngredienteReadFull.model_validate(ingrediente)

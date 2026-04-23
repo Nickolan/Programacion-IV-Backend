@@ -46,8 +46,8 @@ class IngredienteRepository(BaseRepository[Ingrediente]):
             )
         ).first()
     
-    def link_producto(self, ingrediente_id: int, producto_id: int) -> IngredienteProductoLink:
-        link = IngredienteProductoLink(ingrediente_id=ingrediente_id, producto_id=producto_id)
+    def link_producto(self, ingrediente_id: int, producto_id: int, es_removible: bool) -> IngredienteProductoLink:
+        link = IngredienteProductoLink(ingrediente_id=ingrediente_id, producto_id=producto_id, es_removible=es_removible)
         self.session.add(link)
         self.session.commit()
         return link
