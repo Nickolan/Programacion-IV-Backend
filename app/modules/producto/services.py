@@ -84,15 +84,10 @@ class ProductoService:
     def obtener_por_id(self, producto_id: int) -> ProductoReadFull:
         with ProductoUnitOfWork(self._session) as uow:
             producto = self._get_full_or_404(uow, producto_id)
+                          
             print("Producto con categorias: ",producto)
             result = ProductoReadFull.model_validate(producto)
         return result
-    
-    # def switch_active(self, producto_id: int) -> None:
-    #     with ProductoUnitOfWork(self._session) as uow:
-    #         producto = self._get_or_404(uow, producto_id)
-    #         producto.activo = not producto.activo
-    #         uow.productos.add(producto)
 
     def deactive(self, producto_id: int) -> None:
         with ProductoUnitOfWork(self._session) as uow:

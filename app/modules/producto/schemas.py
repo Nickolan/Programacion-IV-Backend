@@ -36,7 +36,6 @@ class ProductoRead(ProductoBase):
 class CategoriaBasicRead(SQLModel):
     """Schema reducido para evitar import circular."""
     id: int
-    codigo: str
     descripcion: str
     activo: bool
     imagen_url: Optional[str]
@@ -64,6 +63,8 @@ class IngredienteBasicRead(SQLModel):
     """Schema reducido para evitar import circular."""
     id: int
     nombre: str
+    es_alergeno: bool
+    es_removible: Optional[bool] = None
 
 class ProductoReadWithIngredientes(ProductoRead):
     """Producto con sus ingredientes anidados."""
