@@ -114,5 +114,6 @@ class CategoriaService:
         with CategoriaUnitOfWork(self._session) as uow:
             categoria = self._get_or_404(uow, categoria_id)
             categoria.activo = False
+            categoria.deleted_at = datetime.utcnow().isoformat()
             uow.categorias.add(categoria)
         return categoria

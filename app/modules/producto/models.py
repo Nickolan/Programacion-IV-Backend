@@ -57,7 +57,7 @@ class Producto(SQLModel, table=True):
     stock: int = Field(default=0)
     stock_minimo: int = Field(default=0)
     imagenes_url: List[str] = Field(default_factory=list, sa_column=Column(JSON))
-    activo: bool = Field(default=True)
+    activo: bool = Field(default=True, nullable=False)
     disponible: bool = Field(default=True)
 
     created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)

@@ -40,7 +40,7 @@ class Ingrediente(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str = Field(index=True)
     descripcion: str
-    es_alergeno: bool = Field(default=False, nullable=True)\
+    es_alergeno: bool = Field(default=False, nullable=True)
     
     created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
     updated_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)

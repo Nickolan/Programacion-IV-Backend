@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional, Tuple
 from sqlalchemy.orm import selectinload
 from fastapi import HTTPException, status
@@ -89,11 +90,13 @@ class ProductoService:
             result = ProductoReadFull.model_validate(producto)
         return result
 
-    def deactive(self, producto_id: int) -> None:
+    def deactive(self, producto_id: int) -> Optional[Producto]:
         with ProductoUnitOfWork(self._session) as uow:
             producto = self._get_or_404(uow, producto_id)
             producto.activo = False
+            producto.deleted_at = datetime.utcnow().isoformat()
             uow.productos.add(producto)
+        return producto
 
     def agregar_categoria_a_producto(self, producto_id: int, categoria_id: int) -> ProductoRead:
         with ProductoUnitOfWork(self._session) as uow:
