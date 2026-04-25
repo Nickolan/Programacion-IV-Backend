@@ -18,13 +18,14 @@ class ProductoCreate(ProductoBase):
     pass 
 
 class ProductoUpdate(SQLModel):
-    nombre: Optional[str] = Field(..., examples=["Cerveza Quilmes"])
+    nombre: Optional[str] = Field(None, examples=["Cerveza Quilmes"])
     descripcion: Optional[str] = Field(None, examples=["Cerveza rubia, ideal para acompañar una picada."])
     precio_base: Optional[float] = Field(None, gt=0)
     stock: Optional[int] = Field(None, ge=0)
     stock_minimo: Optional[int] = Field(None, ge=0)
     imagenes_url: Optional[List[str]] = Field(None, examples=[["https://example.com/producto/pizza.jpg"]])
     disponible: Optional[bool] = None
+
 # ─── Response schemas ──────────────────────────────────────────────────────
 class ProductoRead(ProductoBase):
     id: int
@@ -39,20 +40,31 @@ class CategoriaBasicRead(SQLModel):
     descripcion: str
     activo: bool
     imagen_url: Optional[str]
+    relacion_principal: Optional[bool] = False
+
+class CategoriaWithPrincipal(SQLModel):
+    categoria: CategoriaBasicRead
+    es_principal: Optional[bool] = False
+
+class IngredienteWithProductoInfo(SQLModel):
+    ingrediente: IngredienteBasicRead
+    es_removible: Optional[bool] = None
 
 class ProductoReadFull(ProductoRead):
     """Producto con sus categorías anidadas."""
-    categorias: List[CategoriaBasicRead] = []
-    ingredientes: List[IngredienteBasicRead] = []
+    categorias: List[CategoriaWithPrincipal] = []
+    ingredientes: List[IngredienteWithProductoInfo] = []
 
 class ProductoStockResponse(SQLModel):
     stock: int
     bajo_stock_minimo: bool
     activo: bool
+    disponible: bool
 
 # ─── Operaciones N:M ──────────────────────────────────────────────────────
 class ProductoCategoriaAssign(SQLModel):
     categoria_id: int
+    es_principal: bool = False
 
 class ProductoPaginadoResponse(SQLModel):
     total: int
@@ -64,7 +76,6 @@ class IngredienteBasicRead(SQLModel):
     id: int
     nombre: str
     es_alergeno: bool
-    es_removible: Optional[bool] = None
 
 class ProductoReadWithIngredientes(ProductoRead):
     """Producto con sus ingredientes anidados."""

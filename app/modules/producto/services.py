@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 from sqlmodel import Session, select, func
 
 from .models import Producto, ProductoCategoriaLink
-from .schemas import ProductoRead, ProductoCreate, ProductoUpdate, ProductoPaginadoResponse, ProductoReadFull
+from .schemas import ProductoRead, ProductoCreate, ProductoUpdate, ProductoPaginadoResponse, ProductoReadFull, CategoriaWithPrincipal,IngredienteWithProductoInfo
 from app.modules.categoria.models import Categoria
 from app.modules.producto.unit_of_work import ProductoUnitOfWork
 
@@ -85,9 +85,38 @@ class ProductoService:
     def obtener_por_id(self, producto_id: int) -> ProductoReadFull:
         with ProductoUnitOfWork(self._session) as uow:
             producto = self._get_full_or_404(uow, producto_id)
-                          
+
+            # validar por cada categoría si es principal o no mediante ProductoCategoriaLink
+            # usar schema CategoriaWithPrincipal para anidar esa info en la respuesta
+            response_categorias = []
+            for categoria in producto.categorias:
+                link = uow.productos.get_link(producto_id, categoria.id)
+
+                response_categorias.append(CategoriaWithPrincipal(
+                    categoria=categoria.model_dump(),
+                    es_principal=link.es_principal == True
+                ))
+
+            # Validar por cada ingrediente si es removible o no mediante IngredienteProductoLink
+            response_ingredientes = []
+            for ingrediente in producto.ingredientes:
+                link = uow.ingredientes.get_link(ingrediente.id, producto.id)
+
+                response_ingredientes.append(IngredienteWithProductoInfo(
+                    ingrediente=ingrediente.model_dump(),
+                    es_removible=link.es_removible == True
+                ))
+
+            print("Categorias con info de relación: ", response_categorias)
+
             print("Producto con categorias: ",producto)
-            result = ProductoReadFull.model_validate(producto)
+            print("Ingredientes del producto: ", producto.ingredientes)
+            result = {
+                **producto.model_dump(),
+                "ingredientes": response_ingredientes,
+                "categorias": response_categorias
+            }
+
         return result
 
     def deactive(self, producto_id: int) -> Optional[Producto]:
@@ -98,13 +127,13 @@ class ProductoService:
             uow.productos.add(producto)
         return producto
 
-    def agregar_categoria_a_producto(self, producto_id: int, categoria_id: int) -> ProductoRead:
+    def agregar_categoria_a_producto(self, producto_id: int, categoria_id: int, es_principal: bool) -> ProductoRead:
         with ProductoUnitOfWork(self._session) as uow:
             self._assert_link_not_exists(uow, producto_id, categoria_id)        
             self._get_categoria_or_404(uow, categoria_id)
             producto = self._get_full_or_404(uow, producto_id)
 
-            uow.productos.link_categoria(producto_id, categoria_id)
+            uow.productos.link_categoria(producto_id, categoria_id, es_principal)
             result = ProductoRead.model_validate(producto)
         return result
     
@@ -116,6 +145,7 @@ class ProductoService:
                 "stock": producto.stock,
                 "bajo_stock_minimo": alerta_stock,
                 "activo": producto.activo,
+                "disponible": producto.disponible
             }
         return result
     

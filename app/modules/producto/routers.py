@@ -59,7 +59,7 @@ def asignar_categoria(
     body: ProductoCategoriaAssign, 
     svc: ProductoService = Depends(get_producto_service),
 ):
-    producto = svc.agregar_categoria_a_producto(id, body.categoria_id)
+    producto = svc.agregar_categoria_a_producto(id, body.categoria_id, es_principal=body.es_principal)
     return producto
 
 @router.delete("/{id}/categorias/{categoria_id}", response_model=ProductoRead, status_code=status.HTTP_200_OK)
