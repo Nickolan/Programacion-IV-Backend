@@ -2,6 +2,7 @@ from app.core.repository import BaseRepository
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
 from app.modules.categoria.models import Categoria
+from typing import List, Optional
 
 class CategoriaRepository(BaseRepository[Categoria]):
     """

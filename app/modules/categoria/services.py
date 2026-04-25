@@ -32,14 +32,6 @@ class CategoriaService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Ya existe una categoria con nombre='{nombre}'",
             )
-    
-    def _assert_codigo_unique(self, uow: CategoriaUnitOfWork, codigo: str) -> None:
-        existing = uow.categorias.get_by_codigo(codigo)
-        if existing:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Ya existe una categoria con codigo='{codigo}'",
-            )
         
     # Casos de Uso
         
@@ -80,8 +72,6 @@ class CategoriaService:
             categoria = self._get_or_404(uow, categoria_id)
             if data.nombre and data.nombre != categoria.nombre:
                 self._assert_nombre_unique(uow, data.nombre)
-            # if data.codigo and data.codigo != categoria.codigo:
-            #     self._assert_codigo_unique(uow, data.codigo)
             categoria_data = data.model_dump(exclude_unset=True)
             for key, value in categoria_data.items():
                 setattr(categoria, key, value)
