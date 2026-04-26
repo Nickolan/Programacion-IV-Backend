@@ -14,7 +14,6 @@ class ProductoBase(SQLModel):
 
 # ─── Request schemas ───────────────────────────────────────────────────────
 class ProductoCreate(ProductoBase):
-    ingredientes: Optional[List[int]] = Field(default=None, examples=[[1, 2, 3]])
     pass 
 
 class ProductoUpdate(SQLModel):

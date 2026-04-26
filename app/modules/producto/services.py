@@ -61,11 +61,6 @@ class ProductoService:
         with ProductoUnitOfWork(self._session) as uow:
             nuevo = Producto.model_validate(data)
             print("Nuevo producto: ", nuevo)
-            if data.ingredientes and type (data.ingredientes) == list:
-                print("Ingredientes a asignar: ", data.ingredientes)
-                for ingrediente_id in data.ingredientes:
-                    uow.ingredientes.get_by_id(ingrediente_id)
-                    uow.productos.link_ingrediente(nuevo.id, ingrediente_id)
             uow.productos.add(nuevo)
             result = Producto.model_validate(nuevo)
             print("Producto creado: ", result)

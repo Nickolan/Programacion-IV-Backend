@@ -46,11 +46,13 @@ class ProductoRepository(BaseRepository[Producto]):
     def count(self) -> int:
         return len(self.session.exec(select(Producto)).all())
 
+
     def get_by_categoria(self, categoria_id: int) -> list[Producto]:
         return list(
             self.session.exec(
                 select(Producto)
-                .where(Categoria.id == categoria_id)
+                .join(ProductoCategoriaLink)
+                .where(ProductoCategoriaLink.categoria_id == categoria_id)
             ).all()
         )
     
