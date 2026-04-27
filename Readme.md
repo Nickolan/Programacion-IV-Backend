@@ -1,37 +1,45 @@
-# API de Gestión de Inventario - FastAPI & SQLModel 🚀
+# API de Gestión de Inventario Pro - FastAPI & Clean Architecture 🚀
 
-Esta es una API RESTful construida con **FastAPI** y **SQLModel** para la gestión de un catálogo de productos y sus categorías. El proyecto implementa una arquitectura limpia (Clean Architecture) separando responsabilidades en modelos, esquemas, servicios y enrutadores.
+API RESTful de alto rendimiento diseñada para la gestión integral de productos, categorías e ingredientes. Este proyecto implementa **Patrones de Diseño Enterprise** para garantizar la escalabilidad, la integridad transaccional y un código desacoplado.
 
-Destaca por la implementación de una **relación Muchos a Muchos (N:M)** entre Productos y Categorías, resolviendo de manera elegante los problemas comunes de importaciones circulares en SQLModel y optimizando las consultas a la base de datos para prevenir el problema N+1.
+## 🌟 Highlights Técnicos
+
+* **Arquitectura por Capas:** Separación clara entre modelos, repositorios, servicios y controladores.
+* **Repository Pattern:** Abstracción de la lógica de acceso a datos mediante repositorios genéricos y específicos.
+* **Unit of Work (UoW):** Gestión de transacciones atómicas para asegurar la consistencia de la base de datos en operaciones complejas.
+* **Relaciones N:M Avanzadas:** Implementación de relaciones Muchos a Muchos con atributos adicionales en las tablas intermedias (ej. ingredientes removibles).
+* **Optimización de Consultas:** Estrategias para evitar el problema de N+1 y manejo eficiente de importaciones circulares en SQLModel.
 
 ## 🛠️ Tecnologías Utilizadas
 
-* **Framework Web:** [FastAPI](https://fastapi.tiangolo.com/)
-* **ORM & Validación:** [SQLModel](https://sqlmodel.tiangolo.com/) (Combina el poder de SQLAlchemy y Pydantic)
-* **Base de Datos:** Compatible con PostgreSQL, SQLite, MySQL (Dependiendo de la configuración en `database.py`)
+* **Framework:** [FastAPI](https://fastapi.tiangolo.com/)
+* **ORM & Validación:** [SQLModel](https://sqlmodel.tiangolo.com/) (SQLAlchemy + Pydantic)
+* **Base de Datos:** Soporte para PostgreSQL y SQLite.
 * **Lenguaje:** Python 3.10+
 
 ## 📁 Estructura del Proyecto
 
-El proyecto sigue una estructura modular por dominios (features):
+El proyecto sigue una organización modular por dominios (features):
 
 ```text
 app/
 ├── core/
-│   └── database.py          # Configuración de la DB y dependencia get_session
+│   ├── database.py         # Configuración de DB y Session
+│   ├── repository.py       # BaseRepository genérico
+│   └── unit_of_work.py     # Clase base para gestión transaccional
 ├── modules/
+│   ├── producto/
+│   │   ├── models.py       # Entidad Producto y Tabla Link N:M
+│   │   ├── repository.py   # Repositorio especializado
+│   │   ├── services.py     # Lógica de negocio
+│   │   └── router.py       # Endpoints
 │   ├── categoria/
-│   │   ├── models.py        # Entidad Categoria (SQLModel table=True)
-│   │   ├── schemas.py       # Validaciones Pydantic (Create, Read, Update)
-│   │   ├── services.py      # Lógica de negocio y consultas a la BD
-│   │   └── router.py        # Endpoints de FastAPI
-│   │
-│   └── producto/
-│       ├── models.py        # Entidad Producto y Tabla Intermedia (ProductoCategoriaLink)
-│       ├── schemas.py       # Validaciones Pydantic
-│       ├── services.py      # Lógica de negocio y asignación N:M
-│       └── router.py        # Endpoints de FastAPI
-└── main.py                  # Archivo principal de ejecución
+│   │   └── ...             # Estructura homóloga
+│   └── ingrediente/        # <--- Nuevo Módulo N:M
+│       ├── models.py       # Entidad e IngredienteProductoLink
+│       ├── repository.py
+│       └── unit_of_work.py
+└── main.py                 # Punto de entrada
 ```
 
 ✨ Funcionalidades Principales
