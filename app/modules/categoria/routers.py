@@ -34,6 +34,9 @@ def listar_categorias(
         nombre=nombre
     )
     
+@router.get("/{id}", response_model=schemas.CategoriaReadFull, status_code=status.HTTP_200_OK)
+def detalle_categoria(id: int = Path(..., gt=0), svs: CategoriaService = Depends(get_categoria_service)):
+    return svs.obtener_por_id(id)
 
 @router.patch("/{id}", response_model=schemas.CategoriaRead, status_code=status.HTTP_200_OK)
 def agregar_categoria_padre(
@@ -43,15 +46,12 @@ def agregar_categoria_padre(
 ):
     return svs.agregar_categoria_padre(id, parent_id)
 
-@router.get("/{id}", response_model=schemas.CategoriaReadFull, status_code=status.HTTP_200_OK)
-def detalle_categoria(id: int = Path(..., gt=0), svs: CategoriaService = Depends(get_categoria_service)):
-    return svs.obtener_por_id(id)
 
 @router.put("/{id}", response_model=schemas.CategoriaRead, status_code=status.HTTP_200_OK)
 def actualizar_categoria(categoria: schemas.CategoriaUpdate, id: int = Path(..., gt=0), svs: CategoriaService = Depends(get_categoria_service)):
     actualizada = svs.actualizar_total(id, categoria)
     return actualizada
 
-@router.put("/{id}/desactivar", response_model=schemas.CategoriaRead, status_code=status.HTTP_200_OK)
+@router.delete("/{id}/desactivar", response_model=schemas.CategoriaRead, status_code=status.HTTP_200_OK)
 def borrado_logico(id: int = Path(..., gt=0), svs: CategoriaService = Depends(get_categoria_service)):
     return svs.desactivar(id)

@@ -42,10 +42,6 @@ def actualizar_producto(producto: ProductoUpdate, id: int = Path(..., gt=0), svc
     actualizado = svc.actualizar(id, producto)
     return actualizado
 
-@router.put("/{id}/desactivar", response_model=ProductoRead, status_code=status.HTTP_200_OK)
-def borrado_logico(id: int = Path(..., gt=0), svc: ProductoService = Depends(get_producto_service)):
-    desactivado = svc.deactive(producto_id=id)
-    return desactivado
 
 @router.get("/{id}/stock", response_model=ProductoStockResponse, status_code=status.HTTP_200_OK)
 def consultar_stock(id: int = Path(..., gt=0), svc: ProductoService = Depends(get_producto_service)):
@@ -61,6 +57,11 @@ def asignar_categoria(
 ):
     producto = svc.agregar_categoria_a_producto(id, body.categoria_id, es_principal=body.es_principal)
     return producto
+
+@router.delete("/{id}/desactivar", response_model=ProductoRead, status_code=status.HTTP_200_OK)
+def borrado_logico(id: int = Path(..., gt=0), svc: ProductoService = Depends(get_producto_service)):
+    desactivado = svc.deactive(producto_id=id)
+    return desactivado
 
 @router.delete("/{id}/categorias/{categoria_id}", response_model=ProductoRead, status_code=status.HTTP_200_OK)
 def remover_categoria(id: int, categoria_id: int, svc: ProductoService = Depends(get_producto_service)):

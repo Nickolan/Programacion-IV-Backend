@@ -29,7 +29,8 @@ class CategoriaRepository(BaseRepository[Categoria]):
 
     # Traer subcategorias de una categoria
     def get_subcategorias(self, categoria_id: int) -> list[Categoria]:
-        stmt = select(Categoria).where(Categoria.parent_id == categoria_id)
+        stmt = select(Categoria).where(Categoria.parent_id == categoria_id, Categoria.deleted_at == None)
+    # Traer las que tengan delete_at en Null y categorias nietas
         return list(self.session.exec(stmt).all())
     
     def count(self) -> int:
