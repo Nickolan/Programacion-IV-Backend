@@ -34,7 +34,13 @@ def listar_categorias(
         nombre=nombre
     )
     
-@router.get("/{id}", response_model=schemas.CategoriaReadFull, status_code=status.HTTP_200_OK)
+@router.get(
+    "/{id}",
+    response_model=schemas.CategoriaReadFull,
+    status_code=status.HTTP_200_OK,
+    summary="Detalle de categoría con árbol activo",
+    description="Devuelve la categoría activa, sus productos y todas sus subcategorías activas anidadas.",
+)
 def detalle_categoria(id: int = Path(..., gt=0), svs: CategoriaService = Depends(get_categoria_service)):
     return svs.obtener_por_id(id)
 
@@ -52,6 +58,7 @@ def actualizar_categoria(categoria: schemas.CategoriaUpdate, id: int = Path(...,
     actualizada = svs.actualizar_total(id, categoria)
     return actualizada
 
-@router.delete("/{id}/desactivar", response_model=schemas.CategoriaRead, status_code=status.HTTP_200_OK)
+# No debe devolver nada, pero el status code 200 es para indicar que se hizo la acción correctamente. Si la categoría no existe, se lanza un 404.
+@router.delete("/{id}/desactivar", response_model=None)
 def borrado_logico(id: int = Path(..., gt=0), svs: CategoriaService = Depends(get_categoria_service)):
     return svs.desactivar(id)

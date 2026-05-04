@@ -1,8 +1,9 @@
-from app.core.repository import BaseRepository
-from sqlalchemy.orm import selectinload
+from typing import Any, Optional
+
 from sqlmodel import select
+
+from app.core.repository import BaseRepository
 from app.modules.categoria.models import Categoria
-from typing import List, Optional
 
 class CategoriaRepository(BaseRepository[Categoria]):
     """
@@ -29,9 +30,34 @@ class CategoriaRepository(BaseRepository[Categoria]):
 
     # Traer subcategorias de una categoria
     def get_subcategorias(self, categoria_id: int) -> list[Categoria]:
-        stmt = select(Categoria).where(Categoria.parent_id == categoria_id, Categoria.deleted_at == None)
-    # Traer las que tengan delete_at en Null y categorias nietas
+        stmt = select(Categoria).where(
+            Categoria.parent_id == categoria_id,
+            Categoria.activo == True,
+            Categoria.deleted_at == None,
+        )
         return list(self.session.exec(stmt).all())
+
+    def get_categoria_con_arbol_activas(self, categoria_id: int) -> dict[str, Any] | None:
+        stmt = select(Categoria).where(
+            Categoria.id == categoria_id,
+            Categoria.activo == True,
+            Categoria.deleted_at == None,
+        )
+        categoria = self.session.exec(stmt).first()
+        if not categoria:
+            return None
+
+        return self._armar_arbol_categoria_activa(categoria)
+
+    def _armar_arbol_categoria_activa(self, categoria: Categoria) -> dict[str, Any]:
+        subcategorias = self.get_subcategorias(categoria.id)
+        return {
+            **categoria.model_dump(),
+            "subcategorias": [
+                self._armar_arbol_categoria_activa(subcategoria)
+                for subcategoria in subcategorias
+            ],
+        }
     
     def count(self) -> int:
         return len(self.session.exec(select(Categoria)).all())

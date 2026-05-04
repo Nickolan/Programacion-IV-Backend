@@ -52,17 +52,17 @@ class CategoriaService:
     
     def obtener_por_id(self, categoria_id: int) -> CategoriaReadFull:
         with CategoriaUnitOfWork(self._session) as uow:
-            categoria = self._get_or_404(uow, categoria_id)
+            categoria = uow.categorias.get_categoria_con_arbol_activas(categoria_id)
+            if not categoria:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Categoria activa con id={categoria_id} no encontrada",
+                )
             productos = uow.productos.get_by_categoria(categoria_id)
-            sub_categorias = uow.categorias.get_subcategorias(categoria_id)
-
-            categoria_data = categoria.model_dump()
             productos_data = [ProductoRead.model_validate(p) for p in productos]
-            subcategorias_data = [CategoriaRead.model_validate(c) for c in sub_categorias]
             datos_completos = {
-                **categoria_data,
+                **categoria,
                 "productos": productos_data,
-                "subcategorias": subcategorias_data
             }
             result = CategoriaReadFull.model_validate(datos_completos)
         return result
@@ -106,4 +106,3 @@ class CategoriaService:
             categoria.activo = False
             categoria.deleted_at = datetime.utcnow().isoformat()
             uow.categorias.add(categoria)
-        return categoria

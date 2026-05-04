@@ -39,10 +39,13 @@ class ProductoBasicRead(SQLModel):
 
 class CategoriaReadFull(CategoriaRead):
     """Categoria con sus productos (N:M)."""
-    productos: List[ProductoBasicRead] = []
+    productos: List[ProductoBasicRead] = Field(default_factory=list)
     # categoria: Optional[CategoriaRead] = None
-    subcategorias: List[CategoriaRead] = []
+    subcategorias: List["CategoriaReadFull"] = Field(default_factory=list)
 
 class CategoriaPaginadoResponse(SQLModel):
     total: int
     items: List[CategoriaRead]
+
+
+CategoriaReadFull.model_rebuild()
